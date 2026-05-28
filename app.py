@@ -7,8 +7,8 @@ from functools import wraps
 from models import db, User, Product, CartItem
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'golfshop-secret-2026'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///golfshop.db'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'local-dev-only-key')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///golfshop.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
