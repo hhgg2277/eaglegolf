@@ -1,10 +1,16 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash
+import requests
+import secrets
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
 from models import db, User, Product, CartItem
+
+NAVER_CLIENT_ID     = os.environ.get('NAVER_CLIENT_ID', 'de7FjoWV64zVLbB0S6Qr')
+NAVER_CLIENT_SECRET = os.environ.get('NAVER_CLIENT_SECRET', 'JvMCOnA1Mn')
+NAVER_REDIRECT_URI  = os.environ.get('NAVER_REDIRECT_URI', 'https://web-production-c9bdc.up.railway.app/login/naver/callback')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'local-dev-only-key')
@@ -183,6 +189,76 @@ def login():
 def logout():
     logout_user()
     flash('로그아웃되었습니다.', 'success')
+    return redirect(url_for('index'))
+
+# ── 네이버 로그인 ─────────────────────────────────────
+@app.route('/login/naver')
+def naver_login():
+    state = secrets.token_hex(16)
+    session['naver_state'] = state
+    naver_auth_url = (
+        f"https://nid.naver.com/oauth2.0/authorize"
+        f"?response_type=code"
+        f"&client_id={NAVER_CLIENT_ID}"
+        f"&redirect_uri={NAVER_REDIRECT_URI}"
+        f"&state={state}"
+    )
+    return redirect(naver_auth_url)
+
+@app.route('/login/naver/callback')
+def naver_callback():
+    code  = request.args.get('code')
+    state = request.args.get('state')
+    if not code or state != session.get('naver_state'):
+        flash('네이버 로그인에 실패했습니다.', 'danger')
+        return redirect(url_for('login'))
+    # 토큰 발급
+    token_res = requests.post(
+        'https://nid.naver.com/oauth2.0/token',
+        params={
+            'grant_type': 'authorization_code',
+            'client_id': NAVER_CLIENT_ID,
+            'client_secret': NAVER_CLIENT_SECRET,
+            'code': code,
+            'state': state,
+        }
+    ).json()
+    access_token = token_res.get('access_token')
+    if not access_token:
+        flash('네이버 로그인에 실패했습니다.', 'danger')
+        return redirect(url_for('login'))
+    # 사용자 정보 가져오기
+    profile_res = requests.get(
+        'https://openapi.naver.com/v1/nid/me',
+        headers={'Authorization': f'Bearer {access_token}'}
+    ).json()
+    naver_info = profile_res.get('response', {})
+    naver_id    = naver_info.get('id', '')
+    naver_email = naver_info.get('email', f'{naver_id}@naver.com')
+    naver_name  = naver_info.get('name') or naver_info.get('nickname', '네이버유저')
+    if not naver_id:
+        flash('네이버 사용자 정보를 가져오지 못했습니다.', 'danger')
+        return redirect(url_for('login'))
+    # 기존 회원 확인 또는 자동 가입
+    user = User.query.filter_by(email=naver_email).first()
+    if not user:
+        # 닉네임 중복 방지
+        username = naver_name
+        suffix = 1
+        while User.query.filter_by(username=username).first():
+            username = f'{naver_name}{suffix}'
+            suffix += 1
+        user = User(
+            email    = naver_email,
+            username = username,
+            password = generate_password_hash(secrets.token_hex(16))
+        )
+        db.session.add(user)
+        db.session.commit()
+        flash(f'{username}님, 네이버로 회원가입되었습니다!', 'success')
+    else:
+        flash(f'{user.username}님, 네이버로 로그인되었습니다!', 'success')
+    login_user(user)
     return redirect(url_for('index'))
 
 # ════════════════════════════════════════════════════
