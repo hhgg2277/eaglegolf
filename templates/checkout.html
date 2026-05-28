@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}결제 — EAGLE GOLF{% endblock %}
+{% block content %}
+<div class="page-wrap" style="max-width:680px;">
+  <h2 class="page-title">주문 결제</h2>
+
+  <!-- 주문 상품 목록 -->
+  <div class="form-card" style="margin-bottom:16px;">
+    <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);">주문 상품</h3>
+    {% for item in items %}
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:48px;height:48px;background:var(--bg);border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--border);">
+          {% if item.product.image %}<img src="{{ url_for('static', filename='uploads/'+item.product.image) }}" style="width:100%;height:100%;object-fit:cover;"/>
+          {% else %}<i class="ti ti-golf" style="color:#ccc;font-size:20px;"></i>{% endif %}
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:500;">{{ item.product.name }}</div>
+          <div style="font-size:12px;color:var(--text-muted);">{{ item.quantity }}개</div>
+        </div>
+      </div>
+      <div style="font-size:15px;font-weight:600;">{{ "{:,}".format(item.product.price * item.quantity) }}원</div>
+    </div>
+    {% endfor %}
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:16px;font-size:18px;font-weight:700;color:var(--green);">
+      <span>총 결제금액</span>
+      <span>{{ "{:,}".format(total) }}원</span>
+    </div>
+  </div>
+
+  <!-- 주문자 정보 -->
+  <div class="form-card" style="margin-bottom:24px;">
+    <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);">주문자 정보</h3>
+    <div class="form-group">
+      <label>이름</label>
+      <input type="text" id="customerName" value="{{ current_user.username }}" placeholder="이름 입력"/>
+    </div>
+    <div class="form-group">
+      <label>이메일</label>
+      <input type="text" id="customerEmail" value="{{ current_user.email }}" placeholder="이메일 입력"/>
+    </div>
+    <div class="form-group">
+      <label>연락처</label>
+      <input type="text" id="customerPhone" placeholder="010-0000-0000"/>
+    </div>
+  </div>
+
+  <!-- 결제 버튼 -->
+  <button id="payBtn" class="btn-submit" style="font-size:18px;padding:16px;">
+    <i class="ti ti-credit-card"></i> {{ "{:,}".format(total) }}원 결제하기
+  </button>
+  <a href="{{ url_for('cart') }}" class="btn" style="width:100%;justify-content:center;margin-top:8px;">← 장바구니로 돌아가기</a>
+</div>
+
+<script src="https://js.tosspayments.com/v1/payment"></script>
+<script>
+  const clientKey = "{{ toss_client_key }}";
+  const tossPayments = TossPayments(clientKey);
+
+  document.getElementById('payBtn').addEventListener('click', function() {
+    const customerName  = document.getElementById('customerName').value;
+    const customerEmail = document.getElementById('customerEmail').value;
+    const customerPhone = document.getElementById('customerPhone').value;
+
+    if (!customerName || !customerEmail) {
+      alert('이름과 이메일을 입력해 주세요.');
+      return;
+    }
+
+    // 주문번호 생성
+    const orderId = 'EAGLE-' + Date.now();
+
+    tossPayments.requestPayment('카드', {
+      amount: {{ total }},
+      orderId: orderId,
+      orderName: '{{ items[0].product.name }}{% if items|length > 1 %} 외 {{ items|length - 1 }}건{% endif %}',
+      customerName: customerName,
+      customerEmail: customerEmail,
+      customerMobilePhone: customerPhone.replace(/-/g, ''),
+      successUrl: window.location.origin + '/payment/success',
+      failUrl: window.location.origin + '/payment/fail',
+    }).catch(function(error) {
+      if (error.code !== 'USER_CANCEL') {
+        alert('결제 오류: ' + error.message);
+      }
+    });
+  });
+</script>
+{% endblock %}
