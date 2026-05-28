@@ -1,0 +1,40 @@
+{% extends 'admin/base.html' %}
+{% block title %}대시보드{% endblock %}
+{% block topbar_title %}대시보드{% endblock %}
+{% block content %}
+<div class="stat-grid">
+  <div class="stat-card"><div class="stat-label"><i class="ti ti-package"></i> 전체 상품</div><div class="stat-value green">{{ total_products }}</div></div>
+  <div class="stat-card"><div class="stat-label"><i class="ti ti-users"></i> 전체 회원</div><div class="stat-value">{{ total_users }}</div></div>
+  <div class="stat-card"><div class="stat-label"><i class="ti ti-shopping-cart"></i> 장바구니 수</div><div class="stat-value gold">{{ total_cart }}</div></div>
+</div>
+<div class="card">
+  <div class="card-header"><h3>최근 등록 상품</h3><a href="{{ url_for('admin_products') }}" class="btn btn-sm">전체 보기</a></div>
+  {% if recent_products %}
+  <table><thead><tr><th>상품</th><th>카테고리</th><th>가격</th><th>재고</th><th>상태</th><th>관리</th></tr></thead><tbody>
+  {% for p in recent_products %}
+  <tr>
+    <td><div class="prod-info"><div class="prod-thumb">{% if p.image %}<img src="{{ url_for('static', filename='uploads/'+p.image) }}"/>{% else %}<i class="ti ti-golf" style="font-size:20px;color:#ccc;"></i>{% endif %}</div><a href="{{ url_for('product_detail', id=p.id) }}" class="prod-name" target="_blank">{{ p.name }}</a></div></td>
+    <td>{{ p.category }}</td>
+    <td>{{ "{:,}".format(p.price) }}원</td>
+    <td>{{ p.stock }}</td>
+    <td>{% if p.is_active %}<span class="badge badge-active">판매중</span>{% else %}<span class="badge badge-inactive">숨김</span>{% endif %}</td>
+    <td style="display:flex;gap:6px;">
+      <a href="{{ url_for('admin_edit_product', id=p.id) }}" class="btn btn-sm"><i class="ti ti-edit"></i></a>
+      <form action="{{ url_for('admin_delete_product', id=p.id) }}" method="post" onsubmit="return confirm('삭제하시겠습니까?')"><button class="btn btn-danger btn-sm"><i class="ti ti-trash"></i></button></form>
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody></table>
+  {% else %}<div class="empty"><i class="ti ti-package"></i><p>등록된 상품이 없습니다.</p></div>{% endif %}
+</div>
+<div class="card">
+  <div class="card-header"><h3>최근 가입 회원</h3><a href="{{ url_for('admin_users') }}" class="btn btn-sm">전체 보기</a></div>
+  {% if recent_users %}
+  <table><thead><tr><th>닉네임</th><th>이메일</th><th>권한</th><th>가입일</th></tr></thead><tbody>
+  {% for u in recent_users %}
+  <tr><td><strong>{{ u.username }}</strong></td><td style="color:var(--muted);">{{ u.email }}</td><td>{% if u.is_admin %}<span class="badge badge-admin">관리자</span>{% else %}<span class="badge badge-normal">일반</span>{% endif %}</td><td style="color:#999;">{{ u.created.strftime('%Y.%m.%d') }}</td></tr>
+  {% endfor %}
+  </tbody></table>
+  {% else %}<div class="empty"><i class="ti ti-users"></i><p>회원이 없습니다.</p></div>{% endif %}
+</div>
+{% endblock %}

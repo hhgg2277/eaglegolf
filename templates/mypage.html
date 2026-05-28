@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}마이페이지 — EAGLE GOLF{% endblock %}
+{% block content %}
+<div class="mypage-header">
+  <div class="mypage-header-inner">
+    <div class="mypage-avatar">{{ current_user.username[0] }}</div>
+    <div>
+      <div class="mypage-name">{{ current_user.username }}님</div>
+      <div class="mypage-email">{{ current_user.email }}</div>
+    </div>
+  </div>
+</div>
+<div class="page-wrap">
+  <div class="mypage-grid">
+    <a href="{{ url_for('cart') }}" class="mypage-card">
+      <i class="ti ti-shopping-cart"></i>
+      <div class="mypage-card-label">장바구니</div>
+      <div class="mypage-card-value">{{ cart_count }}</div>
+    </a>
+    <div class="mypage-card">
+      <i class="ti ti-package"></i>
+      <div class="mypage-card-label">주문 내역</div>
+      <div class="mypage-card-value">0</div>
+    </div>
+    <div class="mypage-card">
+      <i class="ti ti-heart"></i>
+      <div class="mypage-card-label">찜한 상품</div>
+      <div class="mypage-card-value">0</div>
+    </div>
+    <a href="{{ url_for('logout') }}" class="mypage-card">
+      <i class="ti ti-logout"></i>
+      <div class="mypage-card-label">로그아웃</div>
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} — EAGLE GOLF{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  <div class="breadcrumb"><a href="{{ url_for('index') }}">홈</a> › <a href="{{ url_for('products', category=product.category) }}">{{ product.category }}</a> › {{ product.name }}</div>
+  <div class="detail-grid">
+    <div class="detail-img">
+      {% if product.image %}
+      <img src="{{ url_for('static', filename='uploads/' + product.image) }}" alt="{{ product.name }}"/>
+      {% else %}
+      <i class="ti ti-golf detail-img-placeholder"></i>
+      {% endif %}
+    </div>
+    <div class="detail-info">
+      <div class="detail-category">{{ product.category }}</div>
+      <h1 class="detail-name">{{ product.name }}</h1>
+      <div class="product-badges" style="position:static;margin-bottom:16px;flex-direction:row;">
+        {% if product.is_best %}<span class="badge badge-best">BEST</span>{% endif %}
+        {% if product.is_new %}<span class="badge badge-new">NEW</span>{% endif %}
+      </div>
+      <div class="detail-price-wrap">
+        <div class="detail-price">{{ "{:,}".format(product.price) }}원</div>
+        <div class="detail-stock {% if product.stock > 0 %}in{% else %}out{% endif %}">
+          <i class="ti ti-{% if product.stock > 0 %}circle-check{% else %}circle-x{% endif %}"></i>
+          {% if product.stock > 0 %}재고 {{ product.stock }}개 — 바로 구매 가능{% else %}품절{% endif %}
+        </div>
+      </div>
+      <p class="detail-desc">{{ product.description }}</p>
+      <div class="detail-actions">
+        {% if current_user.is_authenticated %}
+          {% if product.stock > 0 %}
+          <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="post" style="flex:1;">
+            <div style="display:flex;flex-direction:column;gap:10px;width:100%;">
+              <div class="detail-qty-row">
+                <span style="font-size:14px;font-weight:600;color:var(--text-muted);">수량</span>
+                <div class="qty-ctrl">
+                  <button type="button" class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                  <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="qty-num" readonly/>
+                  <button type="button" class="qty-btn" onclick="changeQty(this,1)">+</button>
+                </div>
+                <span style="font-size:13px;color:var(--text-muted);">최대 {{ product.stock }}개</span>
+              </div>
+              <button type="submit" class="btn-detail-cart"><i class="ti ti-shopping-cart"></i> 장바구니 담기</button>
+            </div>
+          </form>
+          {% else %}
+          <button class="btn-detail-cart" disabled style="opacity:.5;flex:1;">품절</button>
+          {% endif %}
+          {% if current_user.is_admin %}
+          <a href="{{ url_for('admin_edit_product', id=product.id) }}" class="btn">수정</a>
+          {% endif %}
+        {% else %}
+        <a href="{{ url_for('login') }}" class="btn-detail-cart" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <i class="ti ti-login"></i> 로그인 후 구매
+        </a>
+        {% endif %}
+        <button class="btn-wish"><i class="ti ti-heart"></i></button>
+      </div>
+      <div style="margin-top:20px;padding:16px;background:var(--bg);border-radius:var(--radius);font-size:13px;color:var(--text-muted);line-height:1.7;">
+        <i class="ti ti-truck-delivery" style="color:var(--green);"></i> <strong>무료배송</strong> — 전국 무료 배송<br>
+        <i class="ti ti-shield-check" style="color:var(--green);"></i> <strong>정품보증</strong> — 100% 정품 보장<br>
+        <i class="ti ti-refresh" style="color:var(--green);"></i> <strong>교환/반품</strong> — 수령 후 7일 이내
+      </div>
+    </div>
+  </div>
+  {% if related %}
+  <div style="margin-top:48px;">
+    <div class="section-header"><h2 class="section-title">관련 상품</h2></div>
+    <div class="product-grid">{% for p in related %}{% include '_product_card.html' %}{% endfor %}</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}EAGLE GOLF{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+
+<!-- 상단 공지 바 -->
+<div class="top-bar">무료배송 · 전국 당일출고 · 정품보증</div>
+
+<!-- 네비게이션 -->
+<header class="header">
+  <div class="header-inner">
+    <a href="{{ url_for('index') }}" class="logo">🏌️ EAGLE GOLF</a>
+    <form class="header-search" action="{{ url_for('products') }}" method="get">
+      <input type="text" name="q" placeholder="골프 용품 검색..." value="{{ request.args.get('q','') }}"/>
+      <button type="submit"><i class="ti ti-search"></i></button>
+    </form>
+    <div class="header-right">
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('mypage') }}" class="header-icon"><i class="ti ti-user"></i><span>마이페이지</span></a>
+        <a href="{{ url_for('cart') }}" class="header-icon cart-icon">
+          <i class="ti ti-shopping-cart"></i><span>장바구니</span>
+          {% set cnt = current_user.cart|length %}
+          {% if cnt > 0 %}<em class="cart-count">{{ cnt }}</em>{% endif %}
+        </a>
+        {% if current_user.is_admin %}
+        <a href="{{ url_for('admin_dashboard') }}" class="btn-admin"><i class="ti ti-settings"></i> 관리자</a>
+        {% endif %}
+        <a href="{{ url_for('logout') }}" class="header-link">로그아웃</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="header-link">로그인</a>
+        <a href="{{ url_for('register') }}" class="btn-join">회원가입</a>
+      {% endif %}
+    </div>
+  </div>
+  <!-- 카테고리 메뉴 -->
+  <nav class="gnb">
+    <div class="gnb-inner">
+      <a href="{{ url_for('products') }}" class="gnb-item {% if not request.args.get('category') and request.endpoint == 'products' %}active{% endif %}">전체상품</a>
+      {% for cat in ['드라이버','아이언','퍼터','웨지','골프백','골프화','골프웨어','액세서리'] %}
+      <a href="{{ url_for('products', category=cat) }}" class="gnb-item {% if request.args.get('category')==cat %}active{% endif %}">{{ cat }}</a>
+      {% endfor %}
+    </div>
+  </nav>
+</header>
+
+<!-- 플래시 메시지 -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-wrap">
+    {% for category, message in messages %}
+    <div class="flash flash-{{ category }}">
+      <i class="ti ti-{% if category=='success' %}circle-check{% elif category=='danger' %}alert-circle{% else %}info-circle{% endif %}"></i>
+      {{ message }}
+      <button onclick="this.parentElement.remove()" class="flash-close"><i class="ti ti-x"></i></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<main>{% block content %}{% endblock %}</main>
+
+<!-- 푸터 -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">🏌️ EAGLE GOLF</div>
+        <p>최고의 골프 용품을 합리적인 가격으로.<br>정품 보증 · 무료 배송 · 빠른 출고</p>
+        <div class="footer-cs">
+          <strong>고객센터</strong>
+          <span class="cs-tel">1588-0000</span>
+          <small>평일 09:00 ~ 18:00 (주말·공휴일 휴무)</small>
+        </div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>쇼핑 안내</h4>
+          <a href="{{ url_for('products') }}">전체 상품</a>
+          <a href="{{ url_for('cart') if current_user.is_authenticated else url_for('login') }}">장바구니</a>
+          <a href="{{ url_for('mypage') if current_user.is_authenticated else url_for('login') }}">마이페이지</a>
+        </div>
+        <div class="footer-col">
+          <h4>고객 지원</h4>
+          <a href="#">공지사항</a>
+          <a href="#">1:1 문의</a>
+          <a href="#">이용약관</a>
+          <a href="#">개인정보처리방침</a>
+        </div>
+        <div class="footer-col">
+          <h4>배송 · 반품</h4>
+          <a href="#">배송 안내</a>
+          <a href="#">반품/교환 안내</a>
+          <a href="#">환불 안내</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>상호: 이글골프 | 대표: 홍길동 | 사업자등록번호: 000-00-00000 | 통신판매업신고: 제0000-서울-0000호</p>
+      <p>주소: 서울특별시 강남구 테헤란로 123 | 이메일: info@eaglegolf.com | 전화: 1588-0000</p>
+      <p>© 2026 EAGLE GOLF. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  setTimeout(() => document.querySelectorAll('.flash').forEach(el => el.remove()), 4000);
+  function changeQty(btn, delta) {
+    const input = btn.parentElement.querySelector('.qty-num');
+    const min = parseInt(input.min) || 1;
+    const max = parseInt(input.max) || 99;
+    let val = parseInt(input.value) + delta;
+    if (val < min) val = min;
+    if (val > max) val = max;
+    input.value = val;
+  }
+</script>
+</body>
+</html>

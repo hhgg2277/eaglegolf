@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}전체 상품 — EAGLE GOLF{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  <div class="breadcrumb"><a href="{{ url_for('index') }}">홈</a> › {% if category %}{{ category }}{% else %}전체 상품{% endif %}</div>
+  <div class="products-layout">
+    <!-- 사이드바 -->
+    <aside class="sidebar">
+      <h3>카테고리</h3>
+      <div class="sidebar-menu">
+        <a href="{{ url_for('products') }}" class="{% if not category %}active{% endif %}">전체 상품 <span>{{ products|length }}</span></a>
+        {% for cat in categories %}
+        <a href="{{ url_for('products', category=cat) }}" class="{% if category==cat %}active{% endif %}">{{ cat }}</a>
+        {% endfor %}
+      </div>
+    </aside>
+    <!-- 상품 목록 -->
+    <div>
+      <form class="search-bar" action="{{ url_for('products') }}" method="get">
+        {% if category %}<input type="hidden" name="category" value="{{ category }}"/>{% endif %}
+        <input type="text" name="q" class="search-input" placeholder="상품명 검색..." value="{{ q }}"/>
+        <button type="submit" class="search-btn"><i class="ti ti-search"></i> 검색</button>
+        {% if q or category %}<a href="{{ url_for('products') }}" class="btn">초기화</a>{% endif %}
+      </form>
+      <div class="products-header">
+        <div class="products-count">총 <strong>{{ products|length }}</strong>개 상품</div>
+      </div>
+      {% if products %}
+      <div class="product-grid">{% for p in products %}{% include '_product_card.html' %}{% endfor %}</div>
+      {% else %}
+      <div class="empty-state">
+        <i class="ti ti-golf"></i>
+        <p>상품이 없습니다.</p>
+        <a href="{{ url_for('products') }}" class="btn btn-green">전체 상품 보기</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

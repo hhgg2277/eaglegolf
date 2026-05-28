@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}EAGLE GOLF — 프리미엄 골프 용품 전문점{% endblock %}
+{% block content %}
+
+<!-- 히어로 -->
+<section class="hero">
+  <div class="hero-tag">⛳ PREMIUM GOLF SHOP</div>
+  <h1>최고의 골프 용품을<br><span>합리적인 가격</span>으로</h1>
+  <p>국내 정품 보증 · 무료 배송 · 빠른 출고<br>드라이버부터 액세서리까지 모든 골프 용품</p>
+  <div class="hero-btns">
+    <a href="{{ url_for('products') }}" class="hero-btn hero-btn-primary">전체 상품 보기</a>
+    <a href="{{ url_for('products', category='드라이버') }}" class="hero-btn hero-btn-outline">드라이버 보기</a>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-num">{{ total_products }}+</div><div class="hero-stat-label">등록 상품</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">100%</div><div class="hero-stat-label">정품 보증</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">무료</div><div class="hero-stat-label">전국 배송</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">당일</div><div class="hero-stat-label">출고</div></div>
+  </div>
+</section>
+
+<!-- 카테고리 -->
+<div class="cat-bar">
+  <div class="cat-bar-inner">
+    {% set cat_icons = {'드라이버':'golf','아이언':'ball-golf','퍼터':'golf','웨지':'ball-golf','골프백':'backpack','골프화':'shoe','골프웨어':'shirt','액세서리':'tag'} %}
+    {% for cat in ['드라이버','아이언','퍼터','웨지','골프백','골프화','골프웨어','액세서리'] %}
+    <a href="{{ url_for('products', category=cat) }}" class="cat-card">
+      <i class="ti ti-{{ cat_icons.get(cat, 'shopping-bag') }}"></i>
+      <span>{{ cat }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- 베스트 상품 -->
+{% if best_products %}
+<div class="section">
+  <div class="section-header">
+    <h2 class="section-title">🏆 <span>BEST</span> 상품</h2>
+    <a href="{{ url_for('products') }}" class="section-more">전체보기 <i class="ti ti-arrow-right"></i></a>
+  </div>
+  <div class="product-grid">
+    {% for p in best_products %}{% include '_product_card.html' %}{% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- 배너 -->
+<div class="banner-section">
+  <div class="banner-inner">
+    <div class="banner-text">
+      <h3>🏌️ 프리미엄 골프 용품, 지금 바로 만나보세요</h3>
+      <p>타이틀리스트 · 캘러웨이 · 테일러메이드 · 핑 등<br>국내외 유명 브랜드 정품을 최저가로 제공합니다.</p>
+    </div>
+    <a href="{{ url_for('products') }}" class="banner-btn">쇼핑 시작하기 →</a>
+  </div>
+</div>
+
+<!-- 신상품 -->
+{% if new_products %}
+<div class="section">
+  <div class="section-header">
+    <h2 class="section-title">✨ <span>NEW</span> 신상품</h2>
+    <a href="{{ url_for('products') }}" class="section-more">전체보기 <i class="ti ti-arrow-right"></i></a>
+  </div>
+  <div class="product-grid">
+    {% for p in new_products %}{% include '_product_card.html' %}{% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

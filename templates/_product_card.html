@@ -1,0 +1,36 @@
+<div class="product-card">
+  <a href="{{ url_for('product_detail', id=p.id) }}" class="product-card-img">
+    {% if p.image %}
+    <img src="{{ url_for('static', filename='uploads/' + p.image) }}" alt="{{ p.name }}"/>
+    {% else %}
+    <i class="ti ti-golf product-card-img-placeholder"></i>
+    {% endif %}
+    <div class="product-badges">
+      {% if p.is_best %}<span class="badge badge-best">BEST</span>{% endif %}
+      {% if p.is_new %}<span class="badge badge-new">NEW</span>{% endif %}
+    </div>
+  </a>
+  <div class="product-card-body">
+    <div class="product-card-category">{{ p.category }}</div>
+    <a href="{{ url_for('product_detail', id=p.id) }}" class="product-card-name">{{ p.name }}</a>
+    <div class="product-card-price">{{ "{:,}".format(p.price) }}원<small>부가세 포함</small></div>
+  </div>
+  <div class="product-card-footer">
+    {% if current_user.is_authenticated %}
+    <form action="{{ url_for('add_to_cart', product_id=p.id) }}" method="post">
+      <div class="qty-row">
+        <div class="qty-ctrl">
+          <button type="button" class="qty-btn" onclick="changeQty(this,-1)">−</button>
+          <input type="number" name="quantity" value="1" min="1" max="99" class="qty-num" readonly/>
+          <button type="button" class="qty-btn" onclick="changeQty(this,1)">+</button>
+        </div>
+        <button type="submit" class="btn-cart"><i class="ti ti-shopping-cart"></i> 담기</button>
+      </div>
+    </form>
+    {% else %}
+    <a href="{{ url_for('login') }}" class="btn-cart" style="display:flex;align-items:center;justify-content:center;gap:6px;">
+      <i class="ti ti-shopping-cart"></i> 로그인 후 구매
+    </a>
+    {% endif %}
+  </div>
+</div>
