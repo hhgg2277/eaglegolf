@@ -12,6 +12,9 @@ NAVER_CLIENT_ID     = os.environ.get('NAVER_CLIENT_ID', 'de7FjoWV64zVLbB0S6Qr')
 NAVER_CLIENT_SECRET = os.environ.get('NAVER_CLIENT_SECRET', 'JvMCOnA1Mn')
 NAVER_REDIRECT_URI  = os.environ.get('NAVER_REDIRECT_URI', 'https://web-production-c9bdc.up.railway.app/login/naver/callback')
 
+TOSS_CLIENT_KEY = os.environ.get('TOSS_CLIENT_KEY', 'test_ck_ALnQvDd2VJqjEndgyMQv3Mj7X41m')
+TOSS_SECRET_KEY = os.environ.get('TOSS_SECRET_KEY', 'test_sk_PBal2vxj8116J6Wwq9Y285RQgOAN')
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'local-dev-only-key')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///golfshop.db')
