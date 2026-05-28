@@ -5,6 +5,11 @@
   <div class="auth-card">
     <div class="auth-logo">🏌️ EAGLE GOLF</div>
     <div class="auth-subtitle">로그인하고 골프 용품을 구매하세요</div>
+    <a href="{{ url_for('naver_login') }}" class="naver-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
+      네이버 아이디로 로그인
+    </a>
+    <div class="divider"><span>또는 이메일로 로그인</span></div>
     <form method="post">
       <div class="form-group"><label>이메일</label><input type="email" name="email" required placeholder="이메일 주소" autofocus/></div>
       <div class="form-group"><label>비밀번호</label><input type="password" name="password" required placeholder="비밀번호"/></div>
