@@ -9,7 +9,7 @@ from functools import wraps
 from models import db, User, Product, CartItem
 
 NAVER_CLIENT_ID     = os.environ.get('NAVER_CLIENT_ID', 'de7FjoWV64zVLbB0S6Qr')
-NAVER_CLIENT_SECRET = os.environ.get('NAVER_CLIENT_SECRET', 'xxuLoVGXav')
+NAVER_CLIENT_SECRET = os.environ.get('NAVER_CLIENT_SECRET', 'JvMCOnA1Mn')
 NAVER_REDIRECT_URI  = os.environ.get('NAVER_REDIRECT_URI', 'https://web-production-c9bdc.up.railway.app/login/naver/callback')
 
 app = Flask(__name__)
@@ -21,6 +21,10 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 db.init_app(app)
+
+# uploads 폴더 자동 생성
+os.makedirs(os.path.join(app.root_path, 'static', 'uploads'), exist_ok=True)
+
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message = '로그인이 필요합니다.'
@@ -43,10 +47,13 @@ def allowed_file(filename):
 
 def save_image(file):
     if file and allowed_file(file.filename):
+        # 폴더 없으면 자동 생성
+        upload_folder = app.config['UPLOAD_FOLDER']
+        os.makedirs(upload_folder, exist_ok=True)
         filename = secure_filename(file.filename)
         import time
         filename = f"{int(time.time())}_{filename}"
-        path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        path = os.path.join(upload_folder, filename)
         file.save(path)
         return filename
     return ''
@@ -392,11 +399,16 @@ def admin_delete_user(id):
 
 # ── 샘플 데이터 ───────────────────────────────────────
 def create_sample_data():
-    if User.query.count() > 0:
+    # 관리자 계정 없으면 무조건 생성
+    if not User.query.filter_by(is_admin=True).first():
+        admin = User(email='admin@golfshop.com', username='관리자',
+                     password=generate_password_hash('admin1234'), is_admin=True)
+        db.session.add(admin)
+        db.session.flush()
+        print("관리자 계정 생성 완료")
+    if User.query.count() > 1:
         return
-    admin = User(email='admin@golfshop.com', username='관리자',
-                 password=generate_password_hash('admin1234'), is_admin=True)
-    db.session.add(admin)
+    admin = User.query.filter_by(is_admin=True).first()
     db.session.flush()
     samples = [
         ('타이틀리스트 TSR2 드라이버', 650000, '드라이버', 5, True,  False, '2024 신모델. 최고의 비거리와 정확성을 자랑하는 프리미엄 드라이버입니다.'),
