@@ -9,7 +9,7 @@ from functools import wraps
 from models import db, User, Product, CartItem
 
 NAVER_CLIENT_ID     = os.environ.get('NAVER_CLIENT_ID', 'de7FjoWV64zVLbB0S6Qr')
-NAVER_CLIENT_SECRET = os.environ.get('NAVER_CLIENT_SECRET', 'JvMCOnA1Mn')
+NAVER_CLIENT_SECRET = os.environ.get('NAVER_CLIENT_SECRET', 'xxuLoVGXav')
 NAVER_REDIRECT_URI  = os.environ.get('NAVER_REDIRECT_URI', 'https://web-production-c9bdc.up.railway.app/login/naver/callback')
 
 TOSS_CLIENT_KEY = os.environ.get('TOSS_CLIENT_KEY', 'test_ck_ALnQvDd2VJqjEndgyMQv3Mj7X41m')
