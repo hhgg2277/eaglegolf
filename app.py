@@ -271,6 +271,47 @@ def naver_callback():
     login_user(user)
     return redirect(url_for('index'))
 
+# ── 결제 ─────────────────────────────────────────────
+@app.route('/checkout')
+@login_required
+def checkout():
+    items = CartItem.query.filter_by(user_id=current_user.id).all()
+    if not items:
+        flash('장바구니가 비어 있습니다.', 'warning')
+        return redirect(url_for('cart'))
+    total = sum(i.product.price * i.quantity for i in items)
+    return render_template('checkout.html', items=items, total=total,
+                           toss_client_key=TOSS_CLIENT_KEY)
+
+@app.route('/payment/success')
+@login_required
+def payment_success():
+    payment_key = request.args.get('paymentKey')
+    order_id    = request.args.get('orderId')
+    amount      = request.args.get('amount')
+    import base64
+    auth = base64.b64encode(f'{TOSS_SECRET_KEY}:'.encode()).decode()
+    res = requests.post(
+        'https://api.tosspayments.com/v1/payments/confirm',
+        headers={'Authorization': f'Basic {auth}', 'Content-Type': 'application/json'},
+        json={'paymentKey': payment_key, 'orderId': order_id, 'amount': int(amount)}
+    ).json()
+    if res.get('status') == 'DONE':
+        CartItem.query.filter_by(user_id=current_user.id).delete()
+        db.session.commit()
+        flash('결제가 완료되었습니다! 감사합니다.', 'success')
+        return render_template('payment_success.html', payment=res)
+    else:
+        flash(f'결제 실패: {res.get("message", "알 수 없는 오류")}', 'danger')
+        return redirect(url_for('cart'))
+
+@app.route('/payment/fail')
+@login_required
+def payment_fail():
+    message = request.args.get('message', '결제에 실패했습니다.')
+    flash(f'결제 실패: {message}', 'danger')
+    return redirect(url_for('cart'))
+
 # ════════════════════════════════════════════════════
 #  관리자 페이지
 # ════════════════════════════════════════════════════
