@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}결제 완료 — EAGLE GOLF{% endblock %}
+{% block content %}
+<div class="page-wrap" style="max-width:560px;text-align:center;padding-top:80px;">
+  <div style="font-size:72px;margin-bottom:24px;">🎉</div>
+  <h2 style="font-size:28px;font-weight:700;color:var(--green);margin-bottom:12px;">결제 완료!</h2>
+  <p style="font-size:16px;color:var(--text-muted);line-height:1.7;margin-bottom:32px;">
+    결제가 성공적으로 완료되었습니다.<br>빠르게 준비하여 배송해 드리겠습니다.
+  </p>
+  <div style="background:var(--green-light);border-radius:var(--radius-lg);padding:24px;margin-bottom:32px;text-align:left;">
+    <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px;">
+      <span style="color:var(--text-muted);">주문번호</span>
+      <strong>{{ payment.orderId }}</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px;">
+      <span style="color:var(--text-muted);">결제금액</span>
+      <strong style="color:var(--green);">{{ "{:,}".format(payment.totalAmount) }}원</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:14px;">
+      <span style="color:var(--text-muted);">결제수단</span>
+      <strong>{{ payment.method }}</strong>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;">
+    <a href="{{ url_for('index') }}" class="btn" style="flex:1;justify-content:center;">홈으로</a>
+    <a href="{{ url_for('products') }}" class="btn btn-green" style="flex:1;justify-content:center;">쇼핑 계속하기</a>
+  </div>
+</div>
+{% endblock %}
